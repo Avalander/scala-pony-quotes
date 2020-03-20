@@ -26,7 +26,7 @@ trait PonyQuoteRoute {
         post {
           entity(as[QuoteResponse]) { quote =>
             val saved = db.saveQuote(quote.asDb())
-            onComplete(saved) { done =>
+            onComplete(saved) { _ =>
               complete("Quote created")
             }
           }

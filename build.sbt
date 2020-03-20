@@ -2,12 +2,12 @@ import Dependencies._
 
 ThisBuild / scalaVersion     := "2.13.1"
 ThisBuild / version          := "0.1.0-SNAPSHOT"
-ThisBuild / organization     := "com.example"
-ThisBuild / organizationName := "example"
+ThisBuild / organization     := "com.avalander"
+ThisBuild / organizationName := "avalander"
 
 lazy val root = (project in file("."))
   .settings(
-    name := "scala-mongo",
+    name := "pony-quotes",
     libraryDependencies ++= Seq(
       "org.mongodb.scala" %% "mongo-scala-driver" % "4.0.1",
       "com.typesafe.akka" %% "akka-http"   % "10.1.11",
