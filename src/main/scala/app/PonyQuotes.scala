@@ -4,14 +4,12 @@ import akka.actor.ActorSystem
 import akka.http.scaladsl.Http
 import akka.http.scaladsl.marshallers.sprayjson.SprayJsonSupport._
 import akka.http.scaladsl.model._
-import akka.http.scaladsl.server.Route
 import akka.http.scaladsl.server.Directives._
-import akka.stream.ActorMaterializer
+import akka.http.scaladsl.server.Route
+import app.Model._
+import app.Model.implicits._
 
 import scala.io.StdIn
-
-import Model._
-import Model.implicits._
 
 
 trait PonyQuoteRoute {
@@ -49,7 +47,6 @@ trait PonyQuoteRoute {
 
 object PonyQuotes extends App {
   implicit val system = ActorSystem("pony-quotes")
-  implicit val materializer = ActorMaterializer()
   implicit val executionContext = system.dispatcher
 
   // Routes
