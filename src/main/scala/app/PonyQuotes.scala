@@ -10,30 +10,24 @@ import akka.stream.ActorMaterializer
 
 import scala.io.StdIn
 
-import Database._
 import Model._
 import Model.implicits._
 
 
-object PonyQuotes extends App {
-  implicit val system = ActorSystem("pony-quotes")
-  implicit val materializer = ActorMaterializer()
-  implicit val executionContext = system.dispatcher
-
-  // Routes
-
+trait PonyQuoteRoute {
+  val db: Database
   val route: Route = concat(
     path("quote") {
       concat(
         get {
-          val quotes = findQuotes()
+          val quotes = db.findQuotes()
           onSuccess(quotes) { q =>
             complete(GetQuotesResponse(q.asModel()))
           }
         },
         post {
           entity(as[QuoteResponse]) { quote =>
-            val saved = saveQuote(quote.asDb())
+            val saved = db.saveQuote(quote.asDb())
             onComplete(saved) { done =>
               complete("Quote created")
             }
@@ -43,7 +37,7 @@ object PonyQuotes extends App {
     },
     get {
       pathPrefix("quote" / IntNumber) { id =>
-        val quote = findQuote(id)
+        val quote = db.findQuote(id)
         onSuccess(quote) {
           case Some(q) => complete(q.asModel())
           case None    => complete(StatusCodes.NotFound)
@@ -51,6 +45,20 @@ object PonyQuotes extends App {
       }
     },
   )
+}
+
+object PonyQuotes extends App {
+  implicit val system = ActorSystem("pony-quotes")
+  implicit val materializer = ActorMaterializer()
+  implicit val executionContext = system.dispatcher
+
+  // Routes
+
+  val ponyApi = new PonyQuoteRoute {
+    override val db: Database = DatabaseImpl
+  }
+
+  val route: Route = ponyApi.route
 
   val bindingFuture = Http().bindAndHandle(route, "localhost", 8080)
 

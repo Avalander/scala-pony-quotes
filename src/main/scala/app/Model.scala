@@ -2,8 +2,6 @@ package app
 
 import spray.json.DefaultJsonProtocol._
 
-import Database.{Pony, Quote}
-
 object Model {
   final case class PonyResponse(name: String, id: Int) {
     def asDb (): Pony = Pony(name, id)
