@@ -25,7 +25,7 @@ object QuoteApiClient {
     Marshal(quote).to[MessageEntity] flatMap { entity =>
       Http().singleRequest(HttpRequest(
         method = HttpMethods.POST,
-        uri = s"$host/quote",
+        uri = s"http://$host/quote",
         entity = entity
       ))
     }
@@ -33,7 +33,7 @@ object QuoteApiClient {
   def getQuote(id: Int): Future[Quote] = {
     Http().singleRequest(HttpRequest(
       method = HttpMethods.GET,
-      uri = s"$host/quote/$id"
+      uri = s"http://$host/quote/$id"
     )) flatMap  { x =>
       Unmarshal(x).to[Quote]
     }

@@ -46,10 +46,10 @@ jobs:
       - run:
           name: Run integration tests
           command: |
-            dockerize -wait tcp://localhost:8080 -timeout 1m
+            dockerize -wait tcp://$SERVER_URL -timeout 1m
             cat /dev/null | sbt it:test
           environment:
-            SERVER_URL: http://localhost:8080
+            SERVER_URL: localhost:8080
 
 workflows:
   version: 2
