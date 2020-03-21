@@ -49,7 +49,7 @@ jobs:
             dockerize -wait $SERVER_URL -timeout 1m
             cat /dev/null | sbt it:test
           environment:
-            SERVER_URL: http://127.0.0.1:8080
+            SERVER_URL: http://localhost:8080
 
 workflows:
   version: 2
