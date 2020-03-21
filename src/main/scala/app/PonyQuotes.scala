@@ -22,8 +22,8 @@ object PonyQuotes extends App {
   val bindingFuture = Http().bindAndHandle(route, "localhost", 8080)
 
   println("Server listening on port 8080")
-  StdIn.readLine()
-  bindingFuture
-    .flatMap(_.unbind())
-    .onComplete(_ => system.terminate())
+//  StdIn.readLine()
+//  bindingFuture
+//    .flatMap(_.unbind())
+//    .onComplete(_ => system.terminate())
 }
