@@ -1,4 +1,4 @@
-package ponyquotes
+package joke
 
 import org.scalajs.dom.raw.{Event, XMLHttpRequest}
 

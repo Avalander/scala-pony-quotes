@@ -1,79 +1,101 @@
 package ponyquotes
 
 import html.Implicit._
-import html._
-import org.scalajs.dom.{Event, document}
-import ponyquotes.Api._
-import superfine.Superfine.{VNode => HH}
+import html.dsl.Html._
+import html.dsl.Attributes._
+import html.dsl.Events._
+import ponyquotes.api.QuoteApi
+import ponyquotes.model._
 import tea.{App, Dispatch, start}
+import org.scalajs.dom.{Event, document, window}
+import superfine.Superfine.VNode
 
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.util.{Failure, Success}
 
-
 object App {
   def main (args: Array[String]): Unit = {
-    println("This be stuff")
-    jokes()
+    window.addEventListener("DOMContentLoaded", {
+      (_: Event) => mount()
+    })
   }
 
-  def jokes(): Unit = {
-    type State = Option[String]
+  // State
 
-    sealed trait Message
-    case class SetJoke(joke: String) extends Message
-    case object FetchJoke extends Message
-    case class JokeError(e: Throwable) extends Message
+  type State = Seq[Quote]
 
-    sealed trait Effect
-    case object OnFetchJoke extends Effect
+  // Messages
 
-    implicit def handleEffect (dispatch: Dispatch[Message], effect: Effect): Unit =
-      effect match {
-        case OnFetchJoke =>
-          fetchJoke() andThen {
-            case Failure(e) => dispatch(JokeError(e))
-            case Success(j) => dispatch(SetJoke(j.joke))
-          }
+  sealed trait Message
+  case object FetchAllQuotes extends Message
+  case class UpdateQuotes(quotes: Seq[Quote]) extends Message
+
+  // Effects
+
+  sealed trait Effect
+  case object OnFetchAllQuotes extends Effect
+
+  implicit def handleEffect (dispatch: Dispatch[Message], effect: Effect): Unit = {
+    effect match {
+      case OnFetchAllQuotes =>
+        QuoteApi.fetchAllQuotes() andThen {
+          case Failure(e) => println(e)
+          case Success(x) =>
+            println(x.items)
+            dispatch(UpdateQuotes(x.items))
+        }
+    }
+  }
+
+  // mount
+
+  type Update = (State, Seq[Effect])
+
+  def mount (): Unit = {
+    start(new App[State, Message, Effect] {
+      val node = document.querySelector("#app")
+
+      def init (): Update =
+        (List[Quote](), List(OnFetchAllQuotes))
+
+      def update (state: State, message: Message): Update = {
+        message match {
+          case FetchAllQuotes   => (state, List(OnFetchAllQuotes))
+          case UpdateQuotes(qs) => (qs, Nil)
+        }
       }
 
-    start(new App[State, Message, Effect] {
-      val node = document.querySelector("#jokes")
-
-      def init(): (State, Seq[Effect]) = (None, List(OnFetchJoke))
-
-      def update (prev: State, message: Message): (State, Seq[Effect]) =
-        message match {
-          case SetJoke(joke) => (Some(joke), Nil)
-          case FetchJoke     => (prev, List(OnFetchJoke))
-          case JokeError(e)  => {
-            println(e)
-            (Some("Oops, something went wrong"), Nil)
-          }
-        }
-
-      def view (state: State, dispatch: Dispatch[Message]): HH = {
-        state match {
-          case None =>
-            div(
-              p("Press the button to load a joke."),
-              button("Gimme a joke!",
-                onClick := {
-                  (e: Event) => dispatch(FetchJoke)
-                }
-              )
-            )
-          case Some(joke) =>
-            div(
-              p(joke),
-              button("Another joke!",
-                onClick := {
-                  (e: Event) => dispatch(FetchJoke)
-                }
-              )
-            )
-        }
+      def view(state: State, dispatch: Dispatch[Message]): VNode = {
+        div(
+          `class` := "main-content",
+          h1("Pony Quotes", `class` := "title"),
+          View.quoteList(state),
+        )
       }
     })
+  }
+
+  // View
+
+  object View {
+    def quoteList (quotes: Seq[Quote]): VNode = {
+      div(`class` := "quote-list",
+        renderQuote(quotes),
+      )
+    }
+
+    def renderQuote (quotes: Seq[Quote]): VNode = {
+      if (quotes.isEmpty) p("No quote :((")
+      else quote(quotes.head)
+    }
+
+    def quote (quote: Quote): VNode = {
+      div(`class` := "quote",
+        blockquote(quote.text),
+        p(`class` := "author",
+          quote.author.name,
+        ),
+      )
+    }
   }
 }

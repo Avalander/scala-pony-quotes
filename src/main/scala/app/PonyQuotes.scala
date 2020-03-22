@@ -4,8 +4,6 @@ import akka.actor.ActorSystem
 import akka.http.scaladsl.Http
 import akka.http.scaladsl.server.Route
 
-import scala.io.StdIn
-
 import app.store._
 
 
@@ -13,17 +11,15 @@ object PonyQuotes extends App {
   implicit val system = ActorSystem("pony-quotes")
   implicit val executionContext = system.dispatcher
 
+  val port = sys.env("PORT").toInt
+
   val ponyApi = new QuoteApi {
     override val db = StoreImpl
   }
 
   val route: Route = ponyApi.route
 
-  val bindingFuture = Http().bindAndHandle(route, "localhost", 8080)
+  val bindingFuture = Http().bindAndHandle(route, "localhost", port)
 
-  println("Server listening on port 8080")
-//  StdIn.readLine()
-//  bindingFuture
-//    .flatMap(_.unbind())
-//    .onComplete(_ => system.terminate())
+  println(s"Server listening on port $port")
 }

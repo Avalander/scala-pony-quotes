@@ -23,24 +23,6 @@ object Implicit {
   implicit def toTextNode(text: String): TextNode = TextNode(text)
 }
 
-object Example {
-  import Implicit._
-
-  div(
-    `class` := "potato",
-    input(
-      `type` := "text",
-      id := "name",
-      name := "name"
-    ),
-    input(
-      `type` := "text",
-      id := "password",
-      name := "password"
-    )
-  )
-}
-
 class VNode(tag: String) {
   def apply(props: Prop*): HH = {
     val attrs = (props filter isAttr map {
@@ -50,13 +32,34 @@ class VNode(tag: String) {
     val text = props find isTextNode map {
       case TextNode(text) => text
     }
-    val children: js.Array[js.Object] = (props filter isChild map {
-      case Child(node) => node : HH
-    }).toJSArray
+    val children: js.Array[js.Object] = filterChildNodes(props).toJSArray
 
     text match {
       case Some(t) => h(tag, attrs, t)
       case None    => h(tag, attrs, children)
+    }
+  }
+
+  def apply(prop: Prop, props: Seq[Prop]): HH = {
+    val attrs = (props filter isAttr map {
+      case Attribute(key, value) => (key, value)
+      case EventHandler(key, fn) => (key, fn) : (String, js.Function1[Event, Unit])
+    }).toMap[String, Any].toJSDictionary
+    val text = props find isTextNode map {
+      case TextNode(text) => text
+    }
+    val children: js.Array[js.Object] = filterChildNodes(props).toJSArray
+
+    text match {
+      case Some(t) => h(tag, attrs, t)
+      case None    => h(tag, attrs, children)
+    }
+  }
+
+  private def filterChildNodes (ns: Seq[Prop]): Seq[HH] = {
+    ns.foldRight(List[HH]()) {
+      case (Child(n), xs) => n :: xs
+      case (_, xs)        => xs
     }
   }
 
@@ -72,13 +75,6 @@ class VNode(tag: String) {
       case Attribute(_, _)    => true
       case EventHandler(_, _) => true
       case _                  => false
-    }
-  }
-
-  private def isChild (node: Prop): Boolean = {
-    node match {
-      case Child(_) => true
-      case _        => false
     }
   }
 }

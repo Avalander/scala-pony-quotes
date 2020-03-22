@@ -44,7 +44,11 @@ lazy val web = (project in file("web"))
       "com.lihaoyi" %%% "utest" % "0.7.4" % "test"
     ),
     testFrameworks += new TestFramework("utest.runner.Framework"),
-    npmDependencies in Compile += "superfine" -> "7.0.0",
+    npmDependencies in Compile ++= Seq(
+      "superfine" -> "7.0.0",
+      "scalajs-friendly-source-map-loader" -> "0.1.4",
+    ),
+    webpackConfigFile in fastOptJS := Some(baseDirectory.value / "src" / "main" / "js" / "webpack.config.js"),
   )
 
 // See https://www.scala-sbt.org/1.x/docs/Using-Sonatype.html for instructions on how to publish to Sonatype.
