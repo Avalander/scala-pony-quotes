@@ -80,13 +80,8 @@ object App {
   object View {
     def quoteList (quotes: Seq[Quote]): VNode = {
       div(`class` := "quote-list",
-        renderQuote(quotes),
+        (quotes map quote),
       )
-    }
-
-    def renderQuote (quotes: Seq[Quote]): VNode = {
-      if (quotes.isEmpty) p("No quote :((")
-      else quote(quotes.head)
     }
 
     def quote (quote: Quote): VNode = {

@@ -8,6 +8,7 @@ import scala.scalajs.js.JSConverters._
 
 sealed trait Prop
 case class Child(child: HH) extends Prop
+case class ChildList(children: Seq[HH]) extends Prop
 case class TextNode(text: String) extends Prop
 case class Attribute(key: String, value: String) extends Prop
 case class EventHandler(key: String, fn: Event => Unit) extends Prop
@@ -19,6 +20,8 @@ object Implicit {
   }
 
   implicit def toChildNode(node: HH): Child = Child(node)
+
+  implicit def toChildNodeList(nodes: Seq[HH]): ChildList = ChildList(nodes)
 
   implicit def toTextNode(text: String): TextNode = TextNode(text)
 }
@@ -58,8 +61,9 @@ class VNode(tag: String) {
 
   private def filterChildNodes (ns: Seq[Prop]): Seq[HH] = {
     ns.foldRight(List[HH]()) {
-      case (Child(n), xs) => n :: xs
-      case (_, xs)        => xs
+      case (Child(n), xs)      => n :: xs
+      case (ChildList(ns), xs) => ns.toList ++ xs
+      case (_, xs)             => xs
     }
   }
 
