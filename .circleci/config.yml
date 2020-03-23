@@ -17,7 +17,7 @@ jobs:
       - save_cache:
           paths:
             - ~/.m2
-          key: v1-dependencies--{{ checksum "build.sbt" }}
+          key: v1-dependencies-{{ checksum "build.sbt" }}
       - run: cat /dev/null | sbt server/test:test
   int_test:
     docker:
@@ -36,11 +36,11 @@ jobs:
       - save_cache:
           paths:
             - ~/.m2
-          key: v1-dependencies--{{ checksum "build.sbt" }}
+          key: v1-dependencies-{{ checksum "build.sbt" }}
       - run:
           name: Run server
           background: true
-          command: cat /dev/null | sbt run
+          command: cat /dev/null | sbt server/run
           environment:
             MONGO_URL: mongodb://127.0.0.1:27017
             PORT: 8080
