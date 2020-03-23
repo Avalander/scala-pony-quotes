@@ -9,23 +9,6 @@ libraryDependencies += "org.scala-js" %%% "scalajs-dom" % "1.0.0"
 
 enablePlugins(ScalaJSPlugin, ScalaJSBundlerPlugin)
 
-//lazy val root = (project in file("."))
-//  .configs(IntegrationTest)
-//  .settings(
-//    Defaults.itSettings,
-//    name := "pony-quotes",
-//    libraryDependencies ++= Seq(
-//      "org.mongodb.scala" %% "mongo-scala-driver" % "4.0.1",
-//      "com.typesafe.akka" %% "akka-http"   % "10.1.11",
-//      "com.typesafe.akka" %% "akka-stream" % "2.6.4",
-//      "com.typesafe.akka" %% "akka-http-spray-json" % "10.1.11",
-//      scalaTest % "it,test",
-//      "com.typesafe.akka" %% "akka-stream-testkit" % "2.6.4" % Test,
-//      "com.typesafe.akka" %% "akka-http-testkit" % "10.1.11" % Test,
-//      "org.mockito" % "mockito-all" % "1.10.19" % Test
-//    )
-//  )
-
 lazy val server = (project in file("server"))
   .configs(IntegrationTest)
   .settings(
@@ -42,9 +25,6 @@ lazy val server = (project in file("server"))
       "org.mockito" % "mockito-all" % "1.10.19" % Test
     )
   )
-
-//scalaJSUseMainModuleInitializer := true
-//jsEnv := new org.scalajs.jsenv.jsdomnodejs.JSDOMNodeJSEnv()
 
 lazy val web = (project in file("web"))
   .enablePlugins(
