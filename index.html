@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Hello Scala JS</title>
+    <title>Pony Quotes</title>
 
     <style>
     .title {
@@ -12,8 +12,12 @@
   </style>
 </head>
 <body>
-    <h1>Jokes App</h1>
-    <div id="jokes"></div>
+    <div id="app"></div>
     <script src="web/target/scala-2.13/scalajs-bundler/main/pony-quotes-web-fastopt-bundle.js"></script>
+    <script>
+        window.onerror = error => {
+            console.error(error)
+        }
+    </script>
 </body>
 </html>

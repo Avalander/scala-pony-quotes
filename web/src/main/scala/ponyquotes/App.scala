@@ -1,14 +1,15 @@
 package ponyquotes
 
 import html.Implicit._
-import html.dsl.Html._
 import html.dsl.Attributes._
 import html.dsl.Events._
-import ponyquotes.api.QuoteApi
-import ponyquotes.model._
-import tea.{App, Dispatch, start}
+import html.dsl.Html._
 import org.scalajs.dom.{Event, document, window}
+import ponyquotes.api.QuoteApi
+import ponyquotes.api.RemoteData
+import ponyquotes.model._
 import superfine.Superfine.VNode
+import tea.{App, Dispatch, start}
 
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.util.{Failure, Success}
@@ -16,19 +17,19 @@ import scala.util.{Failure, Success}
 object App {
   def main (args: Array[String]): Unit = {
     window.addEventListener("DOMContentLoaded", {
-      (_: Event) => mount()
+      _: Event => mount()
     })
   }
 
   // State
 
-  type State = Seq[Quote]
+  type State = RemoteData[Seq[Quote]]
 
   // Messages
 
   sealed trait Message
   case object FetchAllQuotes extends Message
-  case class UpdateQuotes(quotes: Seq[Quote]) extends Message
+  case class UpdateQuotes(quotes: RemoteData[Seq[Quote]]) extends Message
 
   // Effects
 
@@ -41,8 +42,9 @@ object App {
         QuoteApi.fetchAllQuotes() andThen {
           case Failure(e) => println(e)
           case Success(x) =>
-            println(x.items)
-            dispatch(UpdateQuotes(x.items))
+            dispatch(UpdateQuotes(
+              RemoteData.Success(x.items.toSeq)
+            ))
         }
     }
   }
@@ -56,11 +58,14 @@ object App {
       val node = document.querySelector("#app")
 
       def init (): Update =
-        (List[Quote](), List(OnFetchAllQuotes))
+        (RemoteData.NotAsked, List(OnFetchAllQuotes))
 
       def update (state: State, message: Message): Update = {
         message match {
-          case FetchAllQuotes   => (state, List(OnFetchAllQuotes))
+          case FetchAllQuotes   => (
+            RemoteData.Fetching,
+            List(OnFetchAllQuotes)
+          )
           case UpdateQuotes(qs) => (qs, Nil)
         }
       }
@@ -69,7 +74,13 @@ object App {
         div(
           `class` := "main-content",
           h1("Pony Quotes", `class` := "title"),
-          View.quoteList(state),
+          button("Reload",
+            `class` := "btn primary",
+            onClick := {
+              (_: Event) => dispatch(FetchAllQuotes)
+            }
+          ),
+          View.quotes(state),
         )
       }
     })
@@ -78,6 +89,16 @@ object App {
   // View
 
   object View {
+    def quotes (quotes: RemoteData[Seq[Quote]]): VNode = quotes match {
+      case RemoteData.NotAsked   => p("No quotes")
+      case RemoteData.Fetching   => p("Loading")
+      case RemoteData.Success(x) => quoteList(x)
+      case RemoteData.Failure(e) => div(
+        p("Something went wrong"),
+        p(e.getMessage),
+      )
+    }
+
     def quoteList (quotes: Seq[Quote]): VNode = {
       div(`class` := "quote-list",
         (quotes map quote),

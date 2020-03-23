@@ -18,6 +18,6 @@ package object model {
 
   @js.native
   trait QuoteList extends js.Object {
-    val items: Seq[Quote]
+    val items: js.Array[Quote]
   }
 }
