@@ -21,7 +21,8 @@ object QuoteApiClient {
   implicit private val quoteListFormat = jsonFormat1(QuoteList)
 
   private val host = sys.env("SERVER_URL")
-  private val quoteEndpoint = s"http://$host/quote"
+  private val port = sys.env("SERVER_PORT")
+  private val quoteEndpoint = s"http://$host:$port/quote"
 
   def postQuote(quote: Quote): Future[HttpResponse] =
     Marshal(quote).to[MessageEntity] flatMap { entity =>
